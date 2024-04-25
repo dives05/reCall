@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memory Game</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f0f0f0;
+        flex-direction: column; /* Align items vertically */
+    }
+
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(4, 100px);
+        grid-gap: 10px;
+        margin-top: 20px;
+        justify-content: center;
+    }
+
+    .card {
+        width: 100px;
+        height: 100px;
+        background-color: #999999; /* Slightly darker gray */
+        border-radius: 5px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        color: white;
+        font-size: 24px;
+    }
+
+    .card.matched {
+        background-color: #28a745; /* Change color for matched cards */
+    }
+
+    #restartButton {
+        display: none;
+        margin-top: 20px; /* Adjust margin from top */
+        padding: 10px 20px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+</style>
+</head>
+<body>
+<div class="grid-container" id="gridContainer">
+    <!-- Cards will be generated here -->
+</div>
+<div id="restartContainer"></div> <!-- Place the restart button container below the grid container -->
+<script>
+    const cards = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']; // Pairs of cards
+
+    let flippedCards = [];
+    let matchedCards = [];
+
+    const gridContainer = document.getElementById('gridContainer');
+    const restartContainer = document.getElementById('restartContainer');
+
+    // Shuffle function to shuffle the cards
+    function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    // Create the game grid
+    function createGrid() {
+        const shuffledCards = shuffle(cards);
+        for (let i = 0; i < shuffledCards.length; i++) {
+            const card = document.createElement('div');
+            card.classList.add('card');
+            card.dataset.value = shuffledCards[i];
+            card.textContent = '?';
+            card.addEventListener('click', flipCard);
+            gridContainer.appendChild(card);
+        }
+    }
+
+    // Flip a card
+    function flipCard() {
+        if (flippedCards.length < 2 && !flippedCards.includes(this)) {
+            this.textContent = this.dataset.value;
+            flippedCards.push(this);
+            if (flippedCards.length === 2) {
+                setTimeout(checkMatch, 1000);
+            }
+        }
+    }
+
+    // Check if the flipped cards match
+    function checkMatch() {
+        const [card1, card2] = flippedCards;
+        if (card1.dataset.value === card2.dataset.value) {
+            card1.removeEventListener('click', flipCard);
+            card2.removeEventListener('click', flipCard);
+            card1.classList.add('matched'); // Mark card as matched
+            card2.classList.add('matched'); // Mark card as matched
+            matchedCards.push(card1, card2);
+            if (matchedCards.length === cards.length) {
+                showRestartButton();
+            }
+        } else {
+            card1.textContent = '?';
+            card2.textContent = '?';
+        }
+        flippedCards = [];
+    }
+
+    // Show the restart button
+    function showRestartButton() {
+        const restartButton = document.createElement('button');
+        restartButton.id = 'restartButton';
+        restartButton.textContent = 'Restart';
+        restartButton.addEventListener('click', restartGame);
+        restartContainer.appendChild(restartButton);
+        restartButton.style.display = 'block';
+    }
+
+    // Restart the game
+    function restartGame() {
+        gridContainer.innerHTML = ''; // Clear the grid
+        restartContainer.innerHTML = ''; // Clear the restart button
+        flippedCards = [];
+        matchedCards = [];
+        createGrid();
+    }
+
+    // Initialize the game
+    createGrid();
+</script>
+</body>
+</html>
